@@ -386,7 +386,7 @@ def main():
             trust_remote_code=model_args.trust_remote_code,
         )
 
-    model = AutoModelForTokenClassificationWithCRF.from_pretrained(
+    model = BertForTokenClassificationWithCRF.from_pretrained(
         model_args.model_name_or_path,
         from_tf=bool(".ckpt" in model_args.model_name_or_path),
         config=config,
