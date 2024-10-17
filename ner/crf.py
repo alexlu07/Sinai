@@ -67,17 +67,24 @@ class BertForTokenClassificationWithCRF(BertPreTrainedModel):
         sequence_output = self.dropout(sequence_output)
         emissions = self.classifier(sequence_output)
 
-        crf_mask = attention_mask.bool()
+        crf_mask = labels != -100
+        crf_mask[:, 0] = True
 
         loss = None
         if labels is not None:
             # Calculate the negative log-likelihood
-            loss = -self.crf(emissions, labels, mask=crf_mask)
+
+            labels = labels.clone()
+            labels[labels == -100] = 2
+            loss = -self.crf(emissions, labels, mask=crf_mask, reduction='mean')
 
         # Perform Viterbi decoding to get the most likely labels
         decoded_tags = self.crf.decode(emissions, mask=crf_mask)
-        decoded_tags = torch.tensor(decoded_tags, dtype=torch.long, device=emissions.device)
-        logits = F.one_hot(decoded_tags, num_classes=self.num_labels).to(emissions.dtype) # scuffed solution
+
+        padded_tags = torch.full_like(crf_mask, 2, dtype=torch.long)
+        for i, tags in enumerate(decoded_tags):
+            padded_tags[i][crf_mask[i]] = torch.tensor(tags, device=crf_mask.device)
+        logits = F.one_hot(padded_tags, num_classes=self.num_labels).to(emissions.dtype) # scuffed solution
 
         if not return_dict:
             output = (logits,) + outputs[2:]
@@ -88,5 +95,5 @@ class BertForTokenClassificationWithCRF(BertPreTrainedModel):
             logits=logits,
             hidden_states=outputs.hidden_states,
             attentions=outputs.attentions,
-            emissions=emissions
+            # emissions=emissions
         )
