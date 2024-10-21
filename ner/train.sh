@@ -33,10 +33,10 @@ case "$option" in
         --seed 42 \
         --max_seq_length 512 \
         \
-        --per_device_train_batch_size 16 \
-        --learning_rate 2e-7 \
+        --per_device_train_batch_size 32 \
+        --learning_rate 1e-5 \
         --warmup_ratio 0.5 \
-        --num_train_epochs 4 \
+        --num_train_epochs 30 \
         --weight_decay 0.01 \
         --adam_beta1 0.9 \
         --adam_beta2 0.98 \
@@ -46,6 +46,7 @@ case "$option" in
         --load_best_model_at_end \
         --output_dir $outdir \
         --overwrite_output_dir \
+        --logging_strategy epoch \
         --log_level warning \
         |& tee $outdir/log.txt
 

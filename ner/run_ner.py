@@ -47,6 +47,7 @@ from transformers.utils import check_min_version, send_example_telemetry
 from transformers.utils.versions import require_version
 
 from crf import BertForTokenClassificationWithCRF
+from crf_trainer import CRFTrainer
 
 # Will error if the minimal version of Transformers is not installed. Remove at your own risks.
 check_min_version("4.44.0.dev0")
@@ -564,7 +565,7 @@ def main():
             }
 
     # Initialize our Trainer
-    trainer = Trainer(
+    trainer = CRFTrainer(
         model=model,
         args=training_args,
         train_dataset=train_dataset if training_args.do_train else None,
